@@ -1,0 +1,14 @@
+[
+    {
+      "RecipientName": "John Doe",
+      "RecipientEmail": "john.doe@example.com",
+      "RecipientContact": 1234567890,
+      "Address": "123 Main Street, Springfield"
+    },
+    {
+      "RecipientName": "Jane Smith",
+      "RecipientEmail": "jane.smith@example.com",
+      "RecipientContact": 9876543210,
+      "Address": "456 Elm Street, Shelbyville"
+    }
+  ]
