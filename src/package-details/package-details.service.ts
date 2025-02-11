@@ -8,7 +8,8 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
-  CreatePackageDetailsDto,
+  CreatePackageDetailsV1Dto,
+  CreatePackageDetailsV2Dto,
   UpdatePackageDetailsDto,
   PartialUpdatePackageDetailsDto,
 } from '../package-details/dto/package-details.dto';
@@ -25,8 +26,27 @@ export class PackageDetailsService {
     private readonly recipientModel: Model<Recipient>,
   ) {}
 
-  async createPackage(
-    createPackageDto: CreatePackageDetailsDto,
+  async createV1(
+    createPackageDto: CreatePackageDetailsV1Dto,
+  ): Promise<PackageDetails> {
+    const { RecipientId } = createPackageDto;
+
+    // Validate RecipientId
+    const recipientExists = await this.recipientModel
+      .findById(RecipientId)
+      .exec();
+    if (!recipientExists) {
+      throw new BadRequestException(
+        `Recipient with ID ${RecipientId} does not exist.`,
+      );
+    }
+
+    const newPackage = new this.packageModel(createPackageDto);
+    return newPackage.save();
+  }
+
+  async createV2(
+    createPackageDto: CreatePackageDetailsV2Dto,
   ): Promise<PackageDetails> {
     const { RecipientId } = createPackageDto;
 
@@ -112,7 +132,7 @@ export class PackageDetailsService {
   }
 
   async bulkCreate(
-    packages: CreatePackageDetailsDto[],
+    packages: CreatePackageDetailsV1Dto[],
   ): Promise<PackageDetails[]> {
     if (!Array.isArray(packages) || packages.length === 0) {
       throw new BadRequestException('Packages must be a non-empty array.');

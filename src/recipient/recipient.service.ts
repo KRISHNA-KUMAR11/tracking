@@ -8,7 +8,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Recipient } from '../recipient/schemas/recipient.schema';
 import {
-  CreateRecipientDto,
+  CreateRecipientV1Dto,
+  CreateRecipientV2Dto,
   PartialUpdateRecipientDto,
   UpdateRecipientDto,
 } from '../recipient/dto/recipient.dto';
@@ -19,8 +20,14 @@ export class RecipientService {
     @InjectModel(Recipient.name) private recipientModel: Model<Recipient>,
   ) {}
 
-  async create(createRecipientDto: CreateRecipientDto): Promise<Recipient> {
+  async createV1(createRecipientDto: CreateRecipientV1Dto): Promise<Recipient> {
     return await this.recipientModel.create(createRecipientDto);
+  }
+
+  async createV2(
+    createRecipientsDto: CreateRecipientV2Dto,
+  ): Promise<Recipient> {
+    return await this.recipientModel.create(createRecipientsDto);
   }
 
   async findAll(): Promise<Recipient[]> {
@@ -89,7 +96,7 @@ export class RecipientService {
     }
   }
 
-  async bulkCreate(recipients: CreateRecipientDto[]): Promise<Recipient[]> {
+  async bulkCreate(recipients: CreateRecipientV1Dto[]): Promise<Recipient[]> {
     return (await this.recipientModel.insertMany(
       recipients,
     )) as unknown as Recipient[];
@@ -203,7 +210,7 @@ export class RecipientService {
     return recipient;
   }
 
-  async import(recipients: CreateRecipientDto[]): Promise<any> {
+  async import(recipients: CreateRecipientV1Dto[]): Promise<any> {
     try {
       // Validate data
       if (!Array.isArray(recipients) || recipients.length === 0) {

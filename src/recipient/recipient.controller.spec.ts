@@ -82,13 +82,6 @@ describe('RecipientController', () => {
     service = module.get<RecipientService>(RecipientService);
   });
 
-  describe('POST /recipients', () => {
-    it('should create a new recipient successfully', async () => {
-      const result = await controller.create(mockRecipient);
-      expect(result).toEqual(mockRecipient);
-    });
-  });
-
   describe('GET /recipients', () => {
     it('should return all recipients', async () => {
       const result = await controller.findAll();

@@ -4,7 +4,7 @@ import { PackageDetailsService } from './package-details.service';
 import { getMockRes } from '@jest-mock/express';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { mock, mockReset } from 'jest-mock-extended';
-import { CreatePackageDetailsDto } from '../package-details/dto/package-details.dto';
+import { CreatePackageDetailsV1Dto } from '../package-details/dto/package-details.dto';
 
 describe('PackageController', () => {
   let controller: PackageController;
@@ -23,7 +23,7 @@ describe('PackageController', () => {
 
   describe('create', () => {
     it('should create a package successfully', async () => {
-      const dto: CreatePackageDetailsDto = {
+      const dto: CreatePackageDetailsV1Dto = {
         RecipientId: '12345',
         TrackingNumber: 1001,
         Status: '',
@@ -34,19 +34,26 @@ describe('PackageController', () => {
         Price: 0,
         ID_proof: undefined,
       };
-      mockService.createPackage.mockResolvedValue(dto as any);
 
-      const result = await controller.create(dto);
+      // Assuming mockService returns the dto as the 'data' field
+      mockService.createV1.mockResolvedValue(dto as any);
 
-      expect(mockService.createPackage).toHaveBeenCalledWith(dto);
-      expect(result).toEqual(dto);
+      const expectedResult = {
+        data: dto, // Wrap the dto in 'data'
+        message: 'Package created successfully', // Add message
+      };
+
+      const result = await controller.createV1(dto);
+
+      expect(mockService.createV1).toHaveBeenCalledWith(dto);
+      expect(result).toEqual(expectedResult); // Compare with the updated expected result
     });
 
     it('should throw a BadRequestException for invalid data', async () => {
       const dto = { RecipientId: '', TrackingNumber: null }; // Invalid DTO
-      mockService.createPackage.mockRejectedValue(new BadRequestException());
+      mockService.createV1.mockRejectedValue(new BadRequestException());
 
-      await expect(controller.create(dto as any)).rejects.toThrow(
+      await expect(controller.createV1(dto as any)).rejects.toThrow(
         BadRequestException,
       );
     });

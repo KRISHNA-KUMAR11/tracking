@@ -15,13 +15,17 @@ import {
   NotFoundException,
   BadRequestException,
   InternalServerErrorException,
+  ValidationPipe,
+  UsePipes,
+  Version,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiTags, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiConsumes, ApiBody, ApiHeader } from '@nestjs/swagger';
 import { Response } from 'express';
 import { RecipientService } from './recipient.service';
 import {
-  CreateRecipientDto,
+  CreateRecipientV1Dto,
+  CreateRecipientV2Dto,
   UpdateRecipientDto,
   BulkCreateRecipientsDto,
   BulkDeleteRecipientsDto,
@@ -38,12 +42,54 @@ import {
 export class RecipientController {
   constructor(private readonly recipientService: RecipientService) {}
 
+  @Version('1')
   @Post()
-  async create(@Body() createRecipientDto: CreateRecipientDto) {
-    if (!createRecipientDto) {
-      throw new BadRequestException('Missing required fields');
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  async createV1(@Body() CreateRecipientDto: CreateRecipientV1Dto) {
+    if (!CreateRecipientDto) {
+      throw new BadRequestException('Request body is missing.');
     }
-    return await this.recipientService.create(createRecipientDto);
+
+    try {
+      const newRecipient =
+        await this.recipientService.createV1(CreateRecipientDto);
+      return {
+        message: 'Recipient created successfully',
+        data: newRecipient,
+      };
+    } catch (error) {
+      throw new BadRequestException(
+        `Error creating recipient: ${error.message}`,
+      );
+    }
+  }
+
+  @ApiHeader({
+    name: 'Version-header',
+    enum: ['1', '2'],
+    description: 'API version',
+    required: true,
+  })
+  @Version('2')
+  @Post() // Version 2 endpoint
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  async createV2(@Body() CreateRecipientDto: CreateRecipientV2Dto) {
+    if (!CreateRecipientDto) {
+      throw new BadRequestException('Request body is missing.');
+    }
+
+    try {
+      const newRecipient =
+        await this.recipientService.createV2(CreateRecipientDto);
+      return {
+        message: 'Recipient created successfully',
+        data: newRecipient,
+      };
+    } catch (error) {
+      throw new BadRequestException(
+        `Error creating recipient: ${error.message}`,
+      );
+    }
   }
 
   @Get()

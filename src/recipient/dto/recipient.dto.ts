@@ -10,7 +10,7 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
-export class CreateRecipientDto {
+export class CreateRecipientV1Dto {
   @ApiProperty({ example: 'John Doe' })
   @IsString()
   @IsNotEmpty()
@@ -37,11 +37,33 @@ export class CreateRecipientDto {
   ID_proof: Buffer;
 }
 
-export class UpdateRecipientDto extends CreateRecipientDto {}
+export class CreateRecipientV2Dto {
+  @ApiProperty({ example: 'John Doe' })
+  @IsString()
+  @IsNotEmpty()
+  RecipientName: string;
+
+  @ApiProperty({ example: 'john.doe@example.com' })
+  @IsEmail()
+  @IsNotEmpty()
+  RecipientEmail: string;
+
+  @ApiProperty({ example: 1234567890 })
+  @IsNumber()
+  @IsNotEmpty()
+  RecipientContact: number;
+
+  @ApiProperty({ example: '123 Main Street, Springfield' })
+  @IsString()
+  @IsNotEmpty()
+  Address: string;
+}
+
+export class UpdateRecipientDto extends CreateRecipientV1Dto {}
 
 export class BulkCreateRecipientsDto {
-  @ApiProperty({ type: [CreateRecipientDto] })
-  recipients: CreateRecipientDto[];
+  @ApiProperty({ type: [CreateRecipientV1Dto] })
+  recipients: CreateRecipientV1Dto[];
 }
 
 export class BulkDeleteRecipientsDto {
@@ -50,7 +72,9 @@ export class BulkDeleteRecipientsDto {
   contactNumbers: number[];
 }
 
-export class PartialUpdateRecipientDto implements Partial<CreateRecipientDto> {
+export class PartialUpdateRecipientDto
+  implements Partial<CreateRecipientV1Dto>
+{
   @ApiProperty({ example: 'John Doe' })
   @IsString()
   @IsOptional()

@@ -13,17 +13,21 @@ import {
   BadRequestException,
   InternalServerErrorException,
   Res,
+  UsePipes,
+  ValidationPipe,
+  Version,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
-import { ApiTags, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiConsumes, ApiBody, ApiHeader } from '@nestjs/swagger';
 import { PackageDetailsService } from './package-details.service';
 import {
-  CreatePackageDetailsDto,
-  UpdatePackageDetailsDto,
+  CreatePackageDetailsV1Dto,
+  CreatePackageDetailsV2Dto,
   BulkPackageDetailsDto,
   BulkDeletePackageDetailsDto,
   PartialUpdatePackageDetailsDto,
+  UpdatePackageDetailsDto,
 } from '../package-details/dto/package-details.dto';
 import {
   multerOptions,
@@ -35,10 +39,52 @@ import {
 export class PackageController {
   constructor(private readonly packageService: PackageDetailsService) {}
 
+  @Version('1')
   @Post()
-  @ApiBody({ type: CreatePackageDetailsDto })
-  async create(@Body() createPackageDto: CreatePackageDetailsDto) {
-    return this.packageService.createPackage(createPackageDto);
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  async createV1(@Body() createPackageDto: CreatePackageDetailsV1Dto) {
+    if (!createPackageDto) {
+      throw new BadRequestException('Request body is missing.');
+    }
+
+    try {
+      const newPackage = await this.packageService.createV1(createPackageDto);
+      return {
+        message: 'Package created successfully',
+        data: newPackage,
+      };
+    } catch (error) {
+      throw new BadRequestException(
+        `Error creating recipient: ${error.message}`,
+      );
+    }
+  }
+
+  @ApiHeader({
+    name: 'Version-header',
+    enum: ['1', '2'],
+    description: 'API version',
+    required: true,
+  })
+  @Version('2')
+  @Post()
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  async createV2(@Body() createPackageDto: CreatePackageDetailsV2Dto) {
+    if (!createPackageDto) {
+      throw new BadRequestException('Request body is missing.');
+    }
+
+    try {
+      const newPackage = await this.packageService.createV2(createPackageDto);
+      return {
+        message: 'Package created successfully',
+        data: newPackage,
+      };
+    } catch (error) {
+      throw new BadRequestException(
+        `Error creating recipient: ${error.message}`,
+      );
+    }
   }
 
   @Get()

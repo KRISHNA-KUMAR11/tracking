@@ -3,7 +3,7 @@ import { RecipientService } from './recipient.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { Recipient } from './schemas/recipient.schema';
 import { NotFoundException } from '@nestjs/common';
-import { CreateRecipientDto, UpdateRecipientDto } from './dto/recipient.dto';
+import { CreateRecipientV1Dto, UpdateRecipientDto } from './dto/recipient.dto';
 
 describe('RecipientService', () => {
   let service: RecipientService;
@@ -44,7 +44,7 @@ describe('RecipientService', () => {
 
   describe('create', () => {
     it('should create a recipient successfully', async () => {
-      const result = await service.create(mockRecipient);
+      const result = await service.createV1(mockRecipient);
       expect(result).toEqual(mockRecipient);
       expect(model.create).toHaveBeenCalledWith(mockRecipient);
     });
@@ -213,7 +213,7 @@ describe('controller', () => {
       RecipientContact: 1234567890,
       Address: '123 Test St',
       ID_proof: Buffer.from('mock-data'),
-    } as CreateRecipientDto);
+    } as CreateRecipientV1Dto);
 
     expect(result).toEqual(Recipient);
     expect(controller.create).toHaveBeenCalledWith({
@@ -222,6 +222,6 @@ describe('controller', () => {
       RecipientContact: 1234567890,
       Address: '123 Test St',
       ID_proof: Buffer.from('mock-data'),
-    } as CreateRecipientDto);
+    } as CreateRecipientV1Dto);
   });
 });
